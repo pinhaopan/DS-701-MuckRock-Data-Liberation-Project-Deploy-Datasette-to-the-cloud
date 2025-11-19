@@ -1,0 +1,33 @@
+# Data Dictionary — `slot_machine_revenue`
+
+Last updated: 2025-11-19  
+Source: MuckRock FOIA request covering FY2020–FY2024 slot machine disclosures.
+
+| Column | Type | Description | Example |
+| --- | --- | --- | --- |
+| `installation_name` | TEXT | Canonical name of the military installation. | `Camp Foster` |
+| `facility_name` | TEXT | Venue or building operating the slot machines. | `Ocean Breeze` |
+| `district` | TEXT | Military branch/district reporting the revenue (`Army`, `Navy`, `USMC`). | `Navy` |
+| `country` | TEXT | Country or theater label from the FOIA files (e.g., `Japan`, `Europe`, `Korea`). | `Japan` |
+| `category` | TEXT | Ledger category (primarily `Revenue`). | `Revenue` |
+| `calendar_year` | INTEGER | Calendar year listed in the PDF report. | `2024` |
+| `fiscal_year` | INTEGER | U.S. federal fiscal year derived from month and calendar year. | `2024` |
+| `month_name` | TEXT | Month text from the source (capitalized). | `September` |
+| `month_number` | INTEGER | Numeric month index (1–12) for ordering and fiscal logic. | `9` |
+| `revenue` | REAL | Dollar amount reported for that facility-month (positive or negative). | `45678.32` |
+| `latitude` | REAL | Decimal latitude used for Datasette cluster map. | `26.3421` |
+| `longitude` | REAL | Decimal longitude used for Datasette cluster map. | `127.8016` |
+| `base_clean` | TEXT | Cleaned installation label used for fuzzy matching in preprocessing. | `Camp Butler` |
+| `base_core` | TEXT | Base/core name parsed from PDFs before deduplication. | `Camp Foster` |
+| `base_core_matched` | TEXT | Final matched canonical installation string. | `Camp Foster` |
+
+### Indexes
+- `district`
+- `country`
+- `fiscal_year`
+- `installation_name`
+
+### Notes
+- Fiscal years roll over each October (Oct–Dec records are counted toward the next FY).
+- Revenue values can be negative if refunds or adjustments were recorded for the month.
+- Country entries can represent geographies (e.g., `Europe`) where base-level country reporting was not provided in the PDFs.

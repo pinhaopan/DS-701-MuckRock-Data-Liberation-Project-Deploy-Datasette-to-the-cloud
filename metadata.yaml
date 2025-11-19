@@ -1,0 +1,96 @@
+title: "U.S. Military Base Slot Machine Revenue Explorer"
+description: >
+  Interactive Datasette deployment that surfaces FY2020-FY2024 slot machine
+  revenue reported by U.S. military installations worldwide. Built from
+  MuckRock FOIA responses and enriched with geocoded coordinates for mapping.
+source: "MuckRock FOIA Request"
+license: "Creative Commons Attribution 4.0"
+about: "Datasette instance prepared for the DS 701 project team."
+databases:
+  military_slots:
+    title: "Military Slot Machine Revenue (FY20-FY24)"
+    description: >
+      Monthly slot machine revenue for Army, Navy, and Marine Corps morale,
+      welfare, and recreation (MWR) facilities aligned to fiscal years 2020
+      through 2024 with coordinates for each installation.
+    tables:
+      slot_machine_revenue:
+        title: "Slot Machine Revenue by Installation"
+        description: >
+          Each row represents the revenue reported by a specific facility on a
+          military installation for a given fiscal month. Fiscal years follow
+          the U.S. federal calendar (Oct-Sep).
+        source: "U.S. military MWR slot machine financial disclosures"
+        columns:
+          installation_name: "Official installation name reported in the FOIA response."
+          facility_name: "Name of the club, community center, or other venue housing the slot machines."
+          district: "Military branch or district (Army, Navy, or USMC)."
+          country: "Country or theater where the installation operates."
+          category: "Reported ledger category (Revenue or Expense)."
+          calendar_year: "Calendar year for the entry as provided in the PDF."
+          fiscal_year: "U.S. federal fiscal year that the month rolls up to (Oct-Sep)."
+          month_name: "Name of the month for the record."
+          month_number: "Integer month number (1-12) used for ordering."
+          revenue: "Total slot machine revenue in U.S. dollars."
+          latitude: "Installation latitude for mapping."
+          longitude: "Installation longitude for mapping."
+          base_clean: "Cleaned installation label used for fuzzy matching."
+          base_core: "Core installation label extracted from the PDF."
+          base_core_matched: "Matched canonical installation label."
+        sort: ["revenue", "desc"]
+        facets:
+          - district
+          - country
+          - fiscal_year
+          - installation_name
+        plugins:
+          datasette-cluster-map:
+            latitude_column: latitude
+            longitude_column: longitude
+        queries:
+          branch_revenue_summary:
+            title: "Branch Revenue Overview"
+            sql: |
+              select
+                district as branch,
+                count(distinct installation_name) as installations,
+                round(sum(revenue), 2) as total_revenue,
+                round(avg(revenue), 2) as avg_monthly_revenue
+              from slot_machine_revenue
+              group by district
+              order by total_revenue desc;
+          top_installations:
+            title: "Top 20 Installations by Revenue"
+            sql: |
+              select
+                installation_name,
+                district,
+                country,
+                fiscal_year,
+                round(sum(revenue), 2) as total_revenue
+              from slot_machine_revenue
+              group by installation_name, district, country, fiscal_year
+              order by total_revenue desc
+              limit 20;
+          fiscal_trends:
+            title: "Revenue Trends by Fiscal Year and Branch"
+            sql: |
+              select
+                fiscal_year,
+                district,
+                round(sum(revenue), 2) as total_revenue
+              from slot_machine_revenue
+              group by fiscal_year, district
+              order by fiscal_year desc, total_revenue desc;
+          revenue_by_country:
+            title: "Revenue by Country / Theater"
+            sql: |
+              select
+                country,
+                count(distinct installation_name) as installations,
+                round(sum(revenue), 2) as total_revenue
+              from slot_machine_revenue
+              group by country
+              order by total_revenue desc;
+plugins:
+  datasette-vega: {}

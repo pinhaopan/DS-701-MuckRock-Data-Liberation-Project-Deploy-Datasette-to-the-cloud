@@ -17,9 +17,6 @@ Source: MuckRock FOIA request covering FY2020–FY2024 slot machine disclosures.
 | `revenue` | REAL | Dollar amount reported for that facility-month (positive or negative). | `45678.32` |
 | `latitude` | REAL | Decimal latitude used for Datasette cluster map. | `26.3421` |
 | `longitude` | REAL | Decimal longitude used for Datasette cluster map. | `127.8016` |
-| `base_clean` | TEXT | Cleaned installation label used for fuzzy matching in preprocessing. | `Camp Butler` |
-| `base_core` | TEXT | Base/core name parsed from PDFs before deduplication. | `Camp Foster` |
-| `base_core_matched` | TEXT | Final matched canonical installation string. | `Camp Foster` |
 
 ### Indexes
 - `district`

@@ -34,9 +34,6 @@ databases:
           revenue: "Total slot machine revenue in U.S. dollars."
           latitude: "Installation latitude for mapping."
           longitude: "Installation longitude for mapping."
-          base_clean: "Cleaned installation label used for fuzzy matching."
-          base_core: "Core installation label extracted from the PDF."
-          base_core_matched: "Matched canonical installation label."
         sort_desc: revenue
         facets:
           - district

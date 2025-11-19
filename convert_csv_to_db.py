@@ -65,10 +65,6 @@ def main() -> None:
     df["category"] = df["Category"].astype(str).str.strip()
     df["latitude"] = pd.to_numeric(df["Base_lat"], errors="coerce")
     df["longitude"] = pd.to_numeric(df["Base_lon"], errors="coerce")
-    df["base_clean"] = df.get("Base_clean")
-    df["base_core"] = df.get("Base_core")
-    df["base_core_matched"] = df.get("Base_core_matched")
-
     column_order = [
         "installation_name",
         "facility_name",
@@ -82,9 +78,6 @@ def main() -> None:
         "revenue",
         "latitude",
         "longitude",
-        "base_clean",
-        "base_core",
-        "base_core_matched",
     ]
 
     missing = [col for col in column_order if col not in df.columns]
@@ -112,10 +105,7 @@ def main() -> None:
         month_number INTEGER,
         revenue REAL,
         latitude REAL,
-        longitude REAL,
-        base_clean TEXT,
-        base_core TEXT,
-        base_core_matched TEXT
+        longitude REAL
     )
     """
     db.execute(schema_sql)

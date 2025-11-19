@@ -47,50 +47,54 @@ databases:
           datasette-cluster-map:
             latitude_column: latitude
             longitude_column: longitude
-        queries:
-          branch_revenue_summary:
-            title: "Branch Revenue Overview"
-            sql: |
-              select
-                district as branch,
-                count(distinct installation_name) as installations,
-                round(sum(revenue), 2) as total_revenue,
-                round(avg(revenue), 2) as avg_monthly_revenue
-              from slot_machine_revenue
-              group by district
-              order by total_revenue desc;
-          top_installations:
-            title: "Top 20 Installations by Revenue"
-            sql: |
-              select
-                installation_name,
-                district,
-                country,
-                fiscal_year,
-                round(sum(revenue), 2) as total_revenue
-              from slot_machine_revenue
-              group by installation_name, district, country, fiscal_year
-              order by total_revenue desc
-              limit 20;
-          fiscal_trends:
-            title: "Revenue Trends by Fiscal Year and Branch"
-            sql: |
-              select
-                fiscal_year,
-                district,
-                round(sum(revenue), 2) as total_revenue
-              from slot_machine_revenue
-              group by fiscal_year, district
-              order by fiscal_year desc, total_revenue desc;
-          revenue_by_country:
-            title: "Revenue by Country / Theater"
-            sql: |
-              select
-                country,
-                count(distinct installation_name) as installations,
-                round(sum(revenue), 2) as total_revenue
-              from slot_machine_revenue
-              group by country
-              order by total_revenue desc;
+    queries:
+      branch_revenue_summary:
+        title: "Branch Revenue Overview"
+        description: "Counts installations and aggregates revenue per branch."
+        sql: |
+          select
+            district as branch,
+            count(distinct installation_name) as installations,
+            round(sum(revenue), 2) as total_revenue,
+            round(avg(revenue), 2) as avg_monthly_revenue
+          from slot_machine_revenue
+          group by district
+          order by total_revenue desc;
+      top_installations:
+        title: "Top 20 Installations by Revenue"
+        description: "Shows the highest grossing installations during the time range."
+        sql: |
+          select
+            installation_name,
+            district,
+            country,
+            fiscal_year,
+            round(sum(revenue), 2) as total_revenue
+          from slot_machine_revenue
+          group by installation_name, district, country, fiscal_year
+          order by total_revenue desc
+          limit 20;
+      fiscal_trends:
+        title: "Revenue Trends by Fiscal Year and Branch"
+        description: "Breaks out aggregate revenue per fiscal year and branch."
+        sql: |
+          select
+            fiscal_year,
+            district,
+            round(sum(revenue), 2) as total_revenue
+          from slot_machine_revenue
+          group by fiscal_year, district
+          order by fiscal_year desc, total_revenue desc;
+      revenue_by_country:
+        title: "Revenue by Country / Theater"
+        description: "Aggregates total revenue and installation counts per country."
+        sql: |
+          select
+            country,
+            count(distinct installation_name) as installations,
+            round(sum(revenue), 2) as total_revenue
+          from slot_machine_revenue
+          group by country
+          order by total_revenue desc;
 plugins:
   datasette-vega: {}

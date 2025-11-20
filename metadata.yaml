@@ -24,8 +24,8 @@ databases:
         columns:
           installation_name: "Official installation name reported in the FOIA response."
           facility_name: "Name of the club, community center, or other venue housing the slot machines."
-          district: "Military branch or district (Army, Navy, or USMC)."
-          country: "Country or theater where the installation operates."
+          branch: "Military branch responsible for the facility (Army, Navy, USMC)."
+          district: "Geographic district or theater (e.g., Japan, Europe, Korea)."
           category: "Reported ledger category (Revenue or Expense)."
           calendar_year: "Calendar year for the entry as provided in the PDF."
           fiscal_year: "U.S. federal fiscal year that the month rolls up to (Oct-Sep)."
@@ -34,63 +34,99 @@ databases:
           revenue: "Total slot machine revenue in U.S. dollars."
           latitude: "Installation latitude for mapping."
           longitude: "Installation longitude for mapping."
-          base_clean: "Cleaned installation label used for fuzzy matching."
-          base_core: "Core installation label extracted from the PDF."
-          base_core_matched: "Matched canonical installation label."
-        sort: ["revenue", "desc"]
+        sort_desc: revenue
         facets:
+          - branch
           - district
-          - country
           - fiscal_year
           - installation_name
         plugins:
           datasette-cluster-map:
             latitude_column: latitude
             longitude_column: longitude
-        queries:
-          branch_revenue_summary:
-            title: "Branch Revenue Overview"
-            sql: |
-              select
-                district as branch,
-                count(distinct installation_name) as installations,
-                round(sum(revenue), 2) as total_revenue,
-                round(avg(revenue), 2) as avg_monthly_revenue
-              from slot_machine_revenue
-              group by district
-              order by total_revenue desc;
-          top_installations:
-            title: "Top 20 Installations by Revenue"
-            sql: |
-              select
-                installation_name,
-                district,
-                country,
-                fiscal_year,
-                round(sum(revenue), 2) as total_revenue
-              from slot_machine_revenue
-              group by installation_name, district, country, fiscal_year
-              order by total_revenue desc
-              limit 20;
-          fiscal_trends:
-            title: "Revenue Trends by Fiscal Year and Branch"
-            sql: |
-              select
-                fiscal_year,
-                district,
-                round(sum(revenue), 2) as total_revenue
-              from slot_machine_revenue
-              group by fiscal_year, district
-              order by fiscal_year desc, total_revenue desc;
-          revenue_by_country:
-            title: "Revenue by Country / Theater"
-            sql: |
-              select
-                country,
-                count(distinct installation_name) as installations,
-                round(sum(revenue), 2) as total_revenue
-              from slot_machine_revenue
-              group by country
-              order by total_revenue desc;
+    queries:
+      branch_revenue_summary:
+        title: "Branch Revenue Overview"
+        description: "Counts installations and aggregates revenue per branch."
+        sql: |
+          select
+            branch,
+            count(distinct installation_name) as installations,
+            round(sum(revenue), 2) as total_revenue,
+            round(avg(revenue), 2) as avg_monthly_revenue
+          from slot_machine_revenue
+          group by branch
+          order by total_revenue desc;
+      top_installations:
+        title: "Top 10 Installations by Revenue"
+        description: "Shows the highest grossing installations across the full timeframe."
+        sql: |
+          select
+            installation_name,
+            branch,
+            district,
+            round(sum(revenue), 2) as total_revenue
+          from slot_machine_revenue
+          group by installation_name, branch, district
+          order by total_revenue desc
+          limit 10;
+      fiscal_trends:
+        title: "Revenue Trends by Fiscal Year and Branch"
+        description: "Breaks out aggregate revenue per fiscal year and branch."
+        sql: |
+          select
+            fiscal_year,
+            branch,
+            round(sum(revenue), 2) as total_revenue
+          from slot_machine_revenue
+          group by fiscal_year, branch
+          order by fiscal_year desc, total_revenue desc;
+      revenue_by_district:
+        title: "Revenue by District"
+        description: "Aggregates total revenue and installation counts per geographic district."
+        sql: |
+          select
+            district,
+            count(distinct installation_name) as installations,
+            round(sum(revenue), 2) as total_revenue
+          from slot_machine_revenue
+          group by district
+          order by total_revenue desc;
+      branch_district_revenue:
+        title: "Branch vs District Revenue and Per-Base Average"
+        description: "Total revenue, base counts, and per-base averages grouped by branch and district."
+        sql: |
+          select
+            branch,
+            district,
+            count(distinct installation_name) as installations,
+            round(sum(revenue), 2) as total_revenue,
+            round(sum(revenue) / count(distinct installation_name), 2) as revenue_per_base
+          from slot_machine_revenue
+          group by branch, district
+          order by branch, total_revenue desc;
+      top_bases_by_year_branch:
+        title: "Top Bases by Fiscal Year and Branch"
+        description: "Ranks installations within each fiscal year and branch by total revenue."
+        sql: |
+          with totals as (
+            select
+              installation_name,
+              branch,
+              fiscal_year,
+              round(sum(revenue), 2) as total_revenue
+            from slot_machine_revenue
+            where fiscal_year is not null
+            group by installation_name, branch, fiscal_year
+          )
+          select
+            installation_name,
+            branch,
+            fiscal_year,
+            total_revenue,
+            rank() over (partition by branch, fiscal_year order by total_revenue desc) as rank_in_branch_year
+          from totals
+          order by fiscal_year desc, branch, rank_in_branch_year
+          limit 200;
 plugins:
   datasette-vega: {}

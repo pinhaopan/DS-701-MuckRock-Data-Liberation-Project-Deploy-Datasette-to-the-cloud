@@ -58,19 +58,18 @@ databases:
           group by branch
           order by total_revenue desc;
       top_installations:
-        title: "Top 20 Installations by Revenue"
-        description: "Shows the highest grossing installations during the time range."
+        title: "Top 10 Installations by Revenue"
+        description: "Shows the highest grossing installations across the full timeframe."
         sql: |
           select
             installation_name,
             branch,
             district,
-            fiscal_year,
             round(sum(revenue), 2) as total_revenue
           from slot_machine_revenue
-          group by installation_name, branch, district, fiscal_year
+          group by installation_name, branch, district
           order by total_revenue desc
-          limit 20;
+          limit 10;
       fiscal_trends:
         title: "Revenue Trends by Fiscal Year and Branch"
         description: "Breaks out aggregate revenue per fiscal year and branch."
@@ -93,18 +92,18 @@ databases:
           from slot_machine_revenue
           group by district
           order by total_revenue desc;
-      branch_region_revenue:
-        title: "Branch vs Region Revenue and Per-Base Average"
-        description: "Total revenue, base counts, and per-base averages grouped by branch and region."
+      branch_district_revenue:
+        title: "Branch vs District Revenue and Per-Base Average"
+        description: "Total revenue, base counts, and per-base averages grouped by branch and district."
         sql: |
           select
             branch,
-            district as region,
+            district,
             count(distinct installation_name) as installations,
             round(sum(revenue), 2) as total_revenue,
             round(sum(revenue) / count(distinct installation_name), 2) as revenue_per_base
           from slot_machine_revenue
-          group by branch, region
+          group by branch, district
           order by branch, total_revenue desc;
       top_bases_by_year_branch:
         title: "Top Bases by Fiscal Year and Branch"

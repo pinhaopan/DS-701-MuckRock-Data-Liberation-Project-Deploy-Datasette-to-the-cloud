@@ -48,7 +48,7 @@ databases:
       branch_revenue_summary:
         title: "Branch Revenue Overview"
         description: "Counts installations and aggregates revenue per branch."
-        sql: |
+        sql: &branch_revenue_summary_sql |
           select
             branch,
             count(distinct installation_name) as installations,
@@ -60,7 +60,7 @@ databases:
       top_installations:
         title: "Top 10 Installations by Revenue"
         description: "Shows the highest grossing installations across the full timeframe."
-        sql: |
+        sql: &top_installations_sql |
           select
             installation_name,
             branch,
@@ -73,7 +73,7 @@ databases:
       fiscal_trends:
         title: "Revenue Trends by Fiscal Year and Branch"
         description: "Breaks out aggregate revenue per fiscal year and branch."
-        sql: |
+        sql: &fiscal_trends_sql |
           select
             fiscal_year,
             branch,
@@ -95,7 +95,7 @@ databases:
       branch_district_revenue:
         title: "Branch vs District Revenue and Per-Base Average"
         description: "Total revenue, base counts, and per-base averages grouped by branch and district."
-        sql: |
+        sql: &branch_district_revenue_sql |
           select
             branch,
             district,
@@ -108,7 +108,7 @@ databases:
       top_bases_by_year_branch:
         title: "Top Bases by Fiscal Year and Branch"
         description: "Ranks installations within each fiscal year and branch by total revenue."
-        sql: |
+        sql: &top_bases_by_year_branch_sql |
           with totals as (
             select
               installation_name,
@@ -134,47 +134,63 @@ plugins:
     slot_machine_overview:
       title: "Slot Machine Revenue Overview"
       description: "Key metrics, geographies, trends, and top installations from FY2020-FY2024."
-      cards:
-        - type: markdown
-          content: |
+      charts:
+        snapshot:
+          title: "Project Snapshot"
+          library: markdown
+          display: |
             ### Project Snapshot
             - Data source: MuckRock FOIA responses (Army, Navy, USMC)
             - Coverage: Fiscal Years 2020-2024
             - Plugins: datasette-cluster-map, datasette-vega, datasette-dashboards
-        - type: query
-          database: military_slots
-          query: branch_revenue_summary
+        branch_totals:
           title: "Revenue by Branch"
-          display: table
-        - type: query
-          database: military_slots
-          query: branch_district_revenue
+          library: table
+          db: military_slots
+          query: *branch_revenue_summary_sql
+        branch_district_heatmap:
           title: "Branch vs District Heatmap"
-          display: vega
-          chart:
-            mark: bar
+          library: vega-lite
+          db: military_slots
+          query: *branch_district_revenue_sql
+          display:
+            mark: rect
             encoding:
-              x: { field: region, type: nominal, sort: "-y" }
-              y: { field: branch, type: nominal }
-              color: { field: total_revenue, type: quantitative, scale: { scheme: "blues" } }
-        - type: query
-          database: military_slots
-          query: fiscal_trends
+              x:
+                field: district
+                type: nominal
+              y:
+                field: branch
+                type: nominal
+              color:
+                field: total_revenue
+                type: quantitative
+                scale:
+                  scheme: blues
+        fiscal_year_trends:
           title: "Fiscal-Year Trends"
-          display: vega
-          chart:
+          library: vega-lite
+          db: military_slots
+          query: *fiscal_trends_sql
+          display:
             mark: line
             encoding:
-              x: { field: fiscal_year, type: ordinal }
-              y: { field: total_revenue, type: quantitative }
-              color: { field: branch, type: nominal }
-        - type: query
-          database: military_slots
-          query: top_installations
+              x:
+                field: fiscal_year
+                type: ordinal
+              y:
+                field: total_revenue
+                type: quantitative
+              color:
+                field: branch
+                type: nominal
+        top_installations_table:
           title: "Top 10 Installations"
-          display: table
-        - type: query
-          database: military_slots
-          query: top_bases_by_year_branch
+          library: table
+          db: military_slots
+          query: *top_installations_sql
+        rankings_table:
           title: "Rankings by Branch + FY"
-          display: table
+          library: table
+          db: military_slots
+          query: *top_bases_by_year_branch_sql

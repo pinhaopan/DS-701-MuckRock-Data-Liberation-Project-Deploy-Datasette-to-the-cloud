@@ -130,3 +130,51 @@ databases:
           limit 200;
 plugins:
   datasette-vega: {}
+  datasette-dashboards:
+    slot_machine_overview:
+      title: "Slot Machine Revenue Overview"
+      description: "Key metrics, geographies, trends, and top installations from FY2020-FY2024."
+      cards:
+        - type: markdown
+          content: |
+            ### Project Snapshot
+            - Data source: MuckRock FOIA responses (Army, Navy, USMC)
+            - Coverage: Fiscal Years 2020-2024
+            - Plugins: datasette-cluster-map, datasette-vega, datasette-dashboards
+        - type: query
+          database: military_slots
+          query: branch_revenue_summary
+          title: "Revenue by Branch"
+          display: table
+        - type: query
+          database: military_slots
+          query: branch_district_revenue
+          title: "Branch vs District Heatmap"
+          display: vega
+          chart:
+            mark: bar
+            encoding:
+              x: { field: region, type: nominal, sort: "-y" }
+              y: { field: branch, type: nominal }
+              color: { field: total_revenue, type: quantitative, scale: { scheme: "blues" } }
+        - type: query
+          database: military_slots
+          query: fiscal_trends
+          title: "Fiscal-Year Trends"
+          display: vega
+          chart:
+            mark: line
+            encoding:
+              x: { field: fiscal_year, type: ordinal }
+              y: { field: total_revenue, type: quantitative }
+              color: { field: branch, type: nominal }
+        - type: query
+          database: military_slots
+          query: top_installations
+          title: "Top 10 Installations"
+          display: table
+        - type: query
+          database: military_slots
+          query: top_bases_by_year_branch
+          title: "Rankings by Branch + FY"
+          display: table

@@ -44,6 +44,28 @@ databases:
           datasette-cluster-map:
             latitude_column: latitude
             longitude_column: longitude
+      marine_revenue_detail:
+        title: "Marine Corps Revenue Detail (FY20-FY24)"
+        description: "Line-level Marine Corps slot revenue with coordinates."
+        columns:
+          page: "Page number from the source PDF."
+          loc_id: "Marine facility location identifier."
+          location_name: "Name of the Marine location."
+          month_label: "Month label from the source (e.g., 17-Oct)."
+          revenue: "Reported revenue amount."
+          nafi_amount: "NAFI amount."
+          annual_revenue: "Annual revenue total if provided."
+          annual_nafi: "Annual NAFI total if provided."
+          latitude: "Latitude coordinate for the location."
+          longitude: "Longitude coordinate for the location."
+        sort_desc: revenue
+        facets:
+          - location_name
+          - month_label
+        plugins:
+          datasette-cluster-map:
+            latitude_column: latitude
+            longitude_column: longitude
     queries:
       branch_revenue_summary:
         title: "Branch Revenue Overview"
@@ -128,28 +150,6 @@ databases:
           from totals
           order by fiscal_year desc, branch, rank_in_branch_year
           limit 200;
-      marine_revenue_detail:
-        title: "Marine Corps Revenue Detail (FY20-FY24)"
-        description: "Line-level Marine Corps slot revenue with coordinates."
-        columns:
-          page: "Page number from the source PDF."
-          loc_id: "Marine facility location identifier."
-          location_name: "Name of the Marine location."
-          month_label: "Month label from the source (e.g., 17-Oct)."
-          revenue: "Reported revenue amount."
-          nafi_amount: "NAFI amount."
-          annual_revenue: "Annual revenue total if provided."
-          annual_nafi: "Annual NAFI total if provided."
-          latitude: "Latitude coordinate for the location."
-          longitude: "Longitude coordinate for the location."
-        sort_desc: revenue
-        facets:
-          - location_name
-          - month_label
-        plugins:
-          datasette-cluster-map:
-            latitude_column: latitude
-            longitude_column: longitude
 plugins:
   datasette-vega: {}
   datasette-dashboards:

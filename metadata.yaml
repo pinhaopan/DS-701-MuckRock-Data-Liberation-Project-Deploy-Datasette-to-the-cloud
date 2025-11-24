@@ -134,6 +134,8 @@ plugins:
     slot_machine_overview:
       title: "Slot Machine Revenue Overview"
       description: "Key metrics, geographies, trends, and top installations from FY2020-FY2024."
+      settings:
+        allow_fullscreen: true
       filters:
         fiscal_year:
           type: select
@@ -247,7 +249,7 @@ plugins:
                 - field: installations
                 - field: total_revenue
                 - field: revenue_per_base
-            width: 320
+            width: 240
             height: 240
         fiscal_year_trends:
           title: "Fiscal-Year Trends"
@@ -317,8 +319,8 @@ plugins:
                 - field: branch
                 - field: district
                 - field: total_revenue
-            width: 240
-            height: 220
+            width: 320
+            height: 240
         map_overview:
           title: "Installations Map"
           library: map

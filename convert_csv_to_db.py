@@ -13,8 +13,10 @@ import sqlite_utils
 
 BASE_DIR = Path(__file__).parent
 CSV_PATH = BASE_DIR / "data" / "District_Revenue_FY20-FY24_with_lat_lon_clean.csv"
+MARINE_CSV_PATH = BASE_DIR / "data" / "Marine_Revenue_FY20-FY24_detail_with_coords.csv"
 DB_PATH = BASE_DIR / "military_slots.db"
 TABLE_NAME = "slot_machine_revenue"
+MARINE_TABLE = "marine_revenue_detail"
 
 MONTH_LOOKUP: Dict[str, int] = {
     "january": 1,
@@ -47,6 +49,8 @@ def month_to_fiscal_year(calendar_year: Optional[int], month_number: Optional[in
 def main() -> None:
     if not CSV_PATH.exists():
         raise FileNotFoundError(f"CSV not found at {CSV_PATH}")
+    if not MARINE_CSV_PATH.exists():
+        raise FileNotFoundError(f"Marine CSV not found at {MARINE_CSV_PATH}")
 
     df = pd.read_csv(CSV_PATH)
 
@@ -90,6 +94,8 @@ def main() -> None:
     db = sqlite_utils.Database(DB_PATH)
     if TABLE_NAME in db.table_names():
         db[TABLE_NAME].drop()
+    if MARINE_TABLE in db.table_names():
+        db[MARINE_TABLE].drop()
 
     records = df[column_order].to_dict(orient="records")
     schema_sql = f"""
@@ -120,7 +126,60 @@ def main() -> None:
     for col in ("branch", "district", "fiscal_year", "installation_name"):
         table.create_index([col], if_not_exists=True)
 
+    # Load Marine Corps detail CSV into its own table.
+    marine_df = pd.read_csv(MARINE_CSV_PATH)
+    marine_df.columns = [c.strip() for c in marine_df.columns]
+    marine_df = marine_df.rename(
+        columns={
+            "Page": "page",
+            "Loc #": "loc_id",
+            "Location": "location_name",
+            "Month": "month_label",
+            "Revenue": "revenue",
+            "NAFI Amt": "nafi_amount",
+            "Annual Revenue": "annual_revenue",
+            "Annual NAFI": "annual_nafi",
+            "Latitude": "latitude",
+            "Longitude": "longitude",
+            "\tLatitude": "latitude",
+        }
+    )
+    marine_df["revenue"] = pd.to_numeric(marine_df["revenue"], errors="coerce")
+    marine_df["nafi_amount"] = pd.to_numeric(marine_df["nafi_amount"], errors="coerce")
+    marine_df["annual_revenue"] = pd.to_numeric(marine_df["annual_revenue"], errors="coerce")
+    marine_df["annual_nafi"] = pd.to_numeric(marine_df["annual_nafi"], errors="coerce")
+    marine_df["latitude"] = pd.to_numeric(marine_df["latitude"], errors="coerce")
+    marine_df["longitude"] = pd.to_numeric(marine_df["longitude"], errors="coerce")
+    marine_df["loc_id"] = pd.to_numeric(marine_df["loc_id"], errors="coerce").astype("Int64")
+    marine_df["page"] = pd.to_numeric(marine_df["page"], errors="coerce").astype("Int64")
+
+    marine_df = marine_df.where(pd.notnull(marine_df), None)
+
+    marine_columns = [
+        "page",
+        "loc_id",
+        "location_name",
+        "month_label",
+        "revenue",
+        "nafi_amount",
+        "annual_revenue",
+        "annual_nafi",
+        "latitude",
+        "longitude",
+    ]
+    marine_records = marine_df[marine_columns].to_dict(orient="records")
+    db[MARINE_TABLE].insert_all(
+        marine_records,
+        column_order=marine_columns,
+        batch_size=500,
+        replace=True,
+    )
+    marine_table = db[MARINE_TABLE]
+    for col in ("location_name", "month_label"):
+        marine_table.create_index([col], if_not_exists=True)
+
     print(f"Wrote {len(records)} records to {DB_PATH}")
+    print(f"Wrote {len(marine_records)} marine detail records to {DB_PATH}")
 
 
 if __name__ == "__main__":

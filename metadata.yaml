@@ -1,11 +1,15 @@
 title: "U.S. Military Base Slot Machine Revenue Explorer"
 description: >
-  Interactive Datasette deployment that surfaces FY2020-FY2024 slot machine
-  revenue reported by U.S. military installations worldwide. Built from
-  MuckRock FOIA responses and enriched with geocoded coordinates for mapping.
-source: "MuckRock FOIA Request"
-license: "Creative Commons Attribution 4.0"
-about: "Datasette instance prepared for the DS 701 project team."
+  Interactive Datasette deployment presenting FY2020–FY2024 slot-machine
+  revenue reported by U.S. military installations worldwide. Based on
+  internal financial reports provided via MuckRock and enhanced with
+  geocoded coordinates for global mapping.
+source: | 
+  "Client-provided materials from MuckRock (ARMP/Navy/USMC internal slot machine revenue reports)"
+license: |
+  "U.S. Government Public Domain"
+about: |
+  "This Datasette instance supports public-interest analysis by providing an accessible interface to explore U.S. military slot-machine revenue data. It is intended to help journalists, researchers, and the public analyze and share government financial information originating from Army IMCOM ARMP, Navy MWR, and USMC MWR programs."
 databases:
   military_slots:
     title: "Military Slot Machine Revenue (FY20-FY24)"

@@ -229,7 +229,7 @@ plugins:
           query: "select distinct district from slot_machine_revenue where district is not null order by district"
       charts:
         snapshot:
-          title: "Project Snapshot"
+          title: "Project Details"
           library: markdown
           display: |
             # Project Snapshot
@@ -405,7 +405,7 @@ plugins:
                 - field: branch
                 - field: district
                 - field: total_revenue
-              height: 240
+              height: 320
         map_overview:
           title: "Installations Map"
           library: map

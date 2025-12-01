@@ -5,20 +5,20 @@ description: >
   internal financial reports provided via MuckRock and enhanced with
   geocoded coordinates for global mapping.
 source: | 
-  "Client-provided materials from MuckRock (ARMP/Navy/USMC internal slot machine revenue reports)"
+  Client-provided materials from MuckRock (ARMP/Navy/USMC internal slot machine revenue reports)
 license: |
-  "U.S. Government Public Domain"
+  U.S. Government Public Domain
 about: |
-  "This Datasette instance supports public-interest analysis by providing an accessible interface to explore U.S. military slot-machine revenue data. It is intended to help journalists, researchers, and the public analyze and share government financial information originating from Army IMCOM ARMP, Navy MWR, and USMC MWR programs."
+  Public-interest access to U.S. military slot-machine revenue data
 databases:
-  military_slots:
+  military_slot_machine_revenue:
     title: "Military Slot Machine Revenue (FY20-FY24)"
     description: >
       Monthly slot machine revenue for Army, Navy, and Marine Corps morale,
       welfare, and recreation (MWR) facilities aligned to fiscal years 2020
       through 2024 with coordinates for each installation.
     tables:
-      slot_machine_revenue:
+      district_revenue:
         title: "Slot Machine Revenue by Installation"
         description: >
           Each row represents the revenue reported by a specific facility on a
@@ -26,7 +26,7 @@ databases:
           the U.S. federal calendar (Oct-Sep).
         source: "U.S. military MWR slot machine financial disclosures"
         columns:
-          installation_name: "Official installation name reported in the FOIA response."
+          installation_name: "Official installation name from the slot-machine revenue reports."
           facility_name: "Name of the club, community center, or other venue housing the slot machines."
           branch: "Military branch responsible for the facility (Army, Navy, USMC)."
           district: "Geographic district or theater (e.g., Japan, Europe, Korea)."
@@ -78,14 +78,14 @@ databases:
           datasette-cluster-map:
             latitude_column: base_latitude
             longitude_column: base_longitude
-      navy_monthly_summary:
+      navy_monthly_revenue_summary:
         title: "Navy Monthly Summary (FY20-FY24)"
         description: "Monthly Navy slot revenue and NAFI amounts by installation and location."
         columns:
           installation: "Navy installation name."
           loc_id: "Location identifier."
           location_name: "Facility/location name."
-          month_label: "Month label (e.g., 12-Oct)."
+          year_month_label: "Year–month label as written in the source reports (e.g., 17-Oct meaning 2017 October)."
           revenue: "Revenue for the month."
           nafi_amount: "NAFI amount for the month."
           annual_revenue: "Annual revenue if provided."
@@ -104,13 +104,13 @@ databases:
           loc_id: "Marine facility location identifier."
           base_name: "Name of the Marine base."
           location_name: "Name of the Marine location."
-          month_label: "Month label from the source (e.g., 17-Oct)."
+          year_month_label: "Year–month label as written in the source reports (e.g., 17-Oct meaning 2017 October)."
           revenue: "Reported revenue amount."
           nafi_amount: "NAFI amount."
           annual_revenue: "Annual revenue total if provided."
           annual_nafi: "Annual NAFI total if provided."
-          base_latitude: "Latitude coordinate for the location."
-          base_longitude: "Longitude coordinate for the location."
+          base_latitude: "Latitude coordinate for the base."
+          base_longitude: "Longitude coordinate for the base."
         sort_desc: revenue
         facets:
           - location_name
